@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Feli Nest Hub Ultra</title>
+    <title>Feli Nest Hub PRO</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass: rgba(0, 0, 0, 0.3);
+            --glass: rgba(0, 0, 0, 0.4);
             --glass-border: rgba(255, 255, 255, 0.15);
             --text: #ffffff;
             --primary: #8ab4f8;
-            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
         }
 
         body.night-mode {
@@ -25,118 +24,73 @@
             width: 100%; height: 100%;
             font-family: 'Inter', sans-serif;
             color: var(--text);
-            background-color: #000;
+            background-color: #111; /* Fondo oscuro mientras carga */
             overflow: hidden;
-            transition: all 1s ease;
         }
 
-        /* CAPAS DE FONDO */
         #bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-size: cover;
             background-position: center;
             z-index: -2;
-            transition: background-image 2s ease-in-out, filter 1s;
+            transition: opacity 2s ease-in-out;
+            background-image: url('https://picsum.photos/1280/720?nature'); /* Fondo inicial */
         }
 
         body.night-mode #bg { filter: brightness(0.2) grayscale(1); }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.4) 100%);
+            background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,0.5) 100%);
             z-index: -1;
         }
 
-        /* LAYOUT */
         .main-container {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: row;
-            height: 100vh;
-            width: 100vw;
-            align-items: center;
-            justify-content: space-around;
-            padding: 0 5%;
-            box-sizing: border-box;
+            position: relative; z-index: 1;
+            display: flex; flex-direction: row;
+            height: 100vh; width: 100vw;
+            align-items: center; justify-content: space-around;
+            padding: 0 5%; box-sizing: border-box;
         }
 
-        /* SECCIÓN RELOJ */
-        .clock-section {
-            flex: 1.4;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
+        .clock-section { flex: 1.5; display: flex; flex-direction: column; justify-content: center; }
 
         #time {
-            font-size: 10rem;
-            font-weight: 700;
-            line-height: 0.8;
-            letter-spacing: -5px;
-            margin: 0;
+            font-size: 10rem; font-weight: 700; line-height: 0.8;
+            letter-spacing: -5px; margin: 0;
             text-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
         #date {
-            font-size: 2.2rem;
-            font-weight: 200;
-            opacity: 0.9;
-            margin-top: 15px;
-            text-transform: capitalize;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            font-size: 2.2rem; font-weight: 200; opacity: 0.9;
+            margin-top: 15px; text-transform: capitalize;
         }
 
         #alarm-info {
-            color: var(--primary);
-            font-size: 1.2rem;
-            margin-top: 20px;
-            display: none;
-            background: rgba(0,0,0,0.4);
-            padding: 6px 16px;
-            border-radius: 12px;
-            width: fit-content;
-            backdrop-filter: blur(5px);
+            color: var(--primary); font-size: 1.3rem; margin-top: 20px;
+            display: none; background: rgba(0,0,0,0.5);
+            padding: 8px 15px; border-radius: 12px;
         }
 
-        /* SECCIÓN INFO (TARJETA) */
         .info-section {
-            flex: 1;
-            background: var(--glass);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border);
-            padding: 35px;
-            border-radius: 40px;
-            max-width: 360px;
-            box-shadow: var(--shadow);
-            text-align: center;
+            flex: 1; background: var(--glass);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); padding: 30px;
+            border-radius: 40px; max-width: 360px; text-align: center;
         }
 
-        .city { font-size: 0.9rem; opacity: 0.6; letter-spacing: 3px; text-transform: uppercase; font-weight: 700; }
         .temp { font-size: 5rem; font-weight: 400; margin: 10px 0; }
-        .pill { 
-            background: rgba(255, 255, 255, 0.1); 
-            padding: 10px 20px; 
-            border-radius: 25px; 
-            font-size: 1rem; 
-            display: inline-flex; 
-            align-items: center; 
-            gap: 8px;
-        }
+        .city { font-size: 0.9rem; opacity: 0.6; letter-spacing: 3px; text-transform: uppercase; font-weight: 700; }
+        .pill { background: rgba(255, 255, 255, 0.1); padding: 10px 20px; border-radius: 25px; font-size: 1rem; }
 
-        /* BOTONES */
         .settings-btn {
             position: absolute; bottom: 25px; right: 25px;
-            background: rgba(255, 255, 255, 0.15); border: none;
+            background: rgba(255, 255, 255, 0.2); border: none;
             border-radius: 50%; width: 60px; height: 60px;
             cursor: pointer; font-size: 28px; color: white;
-            display: flex; align-items: center; justify-content: center;
-            z-index: 100; transition: transform 0.3s;
+            display: flex; align-items: center; justify-content: center; z-index: 100;
         }
-        .settings-btn:active { transform: scale(0.9); }
 
-        /* MODAL */
         #modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.92); z-index: 200; align-items: center; justify-content: center;
@@ -144,7 +98,7 @@
 
         .modal-content {
             background: #111; padding: 35px; border-radius: 35px; border: 1px solid #333;
-            width: 85%; max-width: 380px; text-align: center;
+            width: 85%; max-width: 380px; text-align: center; color: white;
         }
 
         input[type="time"] {
@@ -157,7 +111,6 @@
             padding: 18px; border-radius: 15px; width: 100%; cursor: pointer; font-size: 1.2rem;
         }
 
-        /* ANIMACIÓN ALARMA */
         .alarm-flashing { animation: flash 0.6s infinite alternate; }
         @keyframes flash { from { background-color: transparent; } to { background-color: rgba(255, 0, 0, 0.4); } }
     </style>
@@ -169,7 +122,7 @@
 
     <div class="main-container">
         <div class="clock-section">
-            <div id="time">00:00</div>
+            <div id="time">--:--</div>
             <div id="date">Cargando...</div>
             <div id="alarm-info">📻 Radio a las <span id="val-alarm"></span></div>
         </div>
@@ -187,7 +140,7 @@
         <div class="modal-content">
             <h2 style="margin:0 0 10px 0; color:#8ab4f8;">Configurar Alarma</h2>
             <input type="time" id="alarmTime">
-            <button class="btn-save" onclick="saveSettings()">Guardar Cambios</button>
+            <button class="btn-save" onclick="saveSettings()">Guardar Alarma</button>
             <p onclick="closeModal()" style="color:#666; cursor:pointer; margin-top:25px; text-decoration: underline;">Cerrar</p>
         </div>
     </div>
@@ -207,20 +160,18 @@
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('time').innerText = `${h}:${m}`;
+            document.getElementById('time').innerText = h + ":" + m;
 
             const options = { weekday: 'long', day: 'numeric', month: 'long' };
             document.getElementById('date').innerText = now.toLocaleDateString('es-AR', options);
 
-            // Modo Noche Automático (22hs a 07hs)
             if (now.getHours() >= 22 || now.getHours() < 7) {
                 document.body.classList.add('night-mode');
             } else {
                 document.body.classList.remove('night-mode');
             }
 
-            // Alarma al segundo 0
-            if (alarmTime === `${h}:${m}` && now.getSeconds() === 0) {
+            if (alarmTime === h + ":" + m && now.getSeconds() === 0) {
                 startAlarm();
             }
         }
@@ -233,16 +184,16 @@
             } catch(e) { console.log("Error clima"); }
         }
 
-        // FONDOS ROTATIVOS (Nature/Landscapes)
         function changeBg() {
             const bg = document.getElementById('bg');
+            // Usamos una URL de búsqueda de Picsum que es mucho más estable
             const randomID = Math.floor(Math.random() * 1000);
-            // Usamos una colección curada de paisajes para que siempre se vea bien
-            bg.style.backgroundImage = `url('https://picsum.photos/id/${randomID % 50 + 10}/1280/720')`;
+            const newImg = new Image();
+            const url = "https://picsum.photos/1280/720?nature,landscape&sig=" + randomID;
             
-            // Si la imagen de arriba falla (porque el ID no existe), Picsum tiene un fallback
-            bg.onerror = function() {
-                bg.style.backgroundImage = `url('https://picsum.photos/1280/720?nature')`;
+            newImg.src = url;
+            newImg.onload = () => {
+                bg.style.backgroundImage = "url('" + url + "')";
             };
         }
 
@@ -279,21 +230,21 @@
             }
         }
 
-        if (navigator.getBattery) {
-            navigator.getBattery().then(bat => {
-                const u = () => document.getElementById('battery-status').innerText = `🔋 Batería: ${Math.round(bat.level * 100)}%`;
-                u(); bat.onlevelchange = u;
-            });
-        }
+        // Batería con protección para que no rompa el script si falla
+        try {
+            if (navigator.getBattery) {
+                navigator.getBattery().then(bat => {
+                    const u = () => document.getElementById('battery-status').innerText = "🔋 Batería: " + Math.round(bat.level * 100) + "%";
+                    u(); bat.onlevelchange = u;
+                });
+            }
+        } catch (e) { console.log("Bateria no soportada"); }
 
         setInterval(updateClock, 1000);
-        setInterval(getWeather, 1800000); // 30 min
-        setInterval(changeBg, 900000);   // Cada 15 min cambia el fondo
+        setInterval(getWeather, 1800000); 
+        setInterval(changeBg, 900000); // Cambia fondo cada 15 min
         
-        updateClock(); 
-        getWeather(); 
-        changeBg(); 
-        showAlarmInfo();
+        updateClock(); getWeather(); changeBg(); showAlarmInfo();
     </script>
 </body>
 </html>
