@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feli Nest Hub</title>
+    <title>Feli Nest Hub v2</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -13,7 +13,6 @@
             --primary: #8ab4f8;
         }
 
-        /* Modo Noche: Colores rojos suaves para no molestar */
         body.night-mode {
             --primary: #ff4444;
             --text: #ff4444;
@@ -42,7 +41,7 @@
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(to right, rgba(0,0,0,0.7), transparent);
-            z-index: 0;
+            z-index: 0; pointer-events: none; /* No bloquea clics */
         }
 
         .main-container {
@@ -50,7 +49,10 @@
             display: flex; height: 100vh;
             align-items: center; justify-content: space-between;
             padding: 0 8%; box-sizing: border-box;
+            pointer-events: none; /* No bloquea clics al fondo */
         }
+
+        .clock-section, .info-section { pointer-events: auto; }
 
         #time { font-size: 11rem; font-weight: 800; line-height: 0.9; letter-spacing: -5px; }
         #date { font-size: 2.2rem; font-weight: 300; opacity: 0.8; margin-top: 10px; }
@@ -67,33 +69,35 @@
 
         .settings-btn {
             position: absolute; bottom: 30px; right: 30px;
-            background: rgba(255,255,255,0.1); border: none; border-radius: 50%;
-            width: 60px; height: 60px; cursor: pointer; font-size: 25px;
-            display: flex; align-items: center; justify-content: center; z-index: 101;
+            background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 50%; width: 65px; height: 65px; 
+            cursor: pointer; font-size: 30px; color: white;
+            display: flex; align-items: center; justify-content: center; 
+            z-index: 999; /* Siempre arriba */
         }
 
         #modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.92); z-index: 1000; align-items: center; justify-content: center;
         }
 
         .modal-content {
             background: #111; padding: 35px; border-radius: 30px; border: 1px solid #333;
-            width: 90%; max-width: 400px; text-align: center; color: white;
+            width: 85%; max-width: 380px; text-align: center; color: white;
         }
 
-        input[type="time"], select {
+        input[type="time"] {
             width: 100%; padding: 15px; margin: 15px 0; background: #222;
-            border: 1px solid #444; color: white; border-radius: 12px; font-size: 1.2rem;
+            border: 1px solid #444; color: white; border-radius: 12px; font-size: 1.5rem; text-align: center;
         }
 
         .btn-save {
             background: #8ab4f8; color: #000; font-weight: bold; border: none;
-            padding: 18px; border-radius: 15px; width: 100%; cursor: pointer; font-size: 1.1rem;
+            padding: 18px; border-radius: 15px; width: 100%; cursor: pointer; font-size: 1.2rem;
         }
 
-        .alarm-flashing { animation: flash 0.6s infinite alternate; }
-        @keyframes flash { from { background-color: #000; } to { background-color: #600; } }
+        .alarm-flashing { animation: flash 0.8s infinite alternate; }
+        @keyframes flash { from { background-color: #000; } to { background-color: #400; } }
     </style>
 </head>
 <body id="body-main">
@@ -103,9 +107,11 @@
 
     <div class="main-container">
         <div class="clock-section">
-            <div id="time">--:--</div>
-            <div id="date">Cargando...</div>
-            <div id="alarm-info" style="color: #8ab4f8; margin-top:15px; display:none;">⏰ <span id="val-alarm"></span></div>
+            <div id="time">00:00</div>
+            <div id="date">Iniciando...</div>
+            <div id="alarm-info" style="color: #8ab4f8; font-size: 1.5rem; margin-top:20px; display:none;">
+                📻 Radio a las <span id="val-alarm"></span>
+            </div>
         </div>
 
         <div class="info-section">
@@ -120,83 +126,92 @@
     <div id="modal">
         <div class="modal-content">
             <h2 style="margin-top:0">Configuración</h2>
-            <label>Hora de Alarma:</label>
+            <p style="color:#aaa">Se activará Luve Radio</p>
             <input type="time" id="alarmTime">
-            <label>Sonido:</label>
-            <select id="alarmSound">
-                <option value="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3">Digital</option>
-                <option value="https://assets.mixkit.co/active_storage/sfx/1017/1017-preview.mp3">Campanas</option>
-            </select>
-            <button class="btn-save" onclick="saveSettings()">Guardar</button>
-            <p onclick="closeModal()" style="color:#888; cursor:pointer; margin-top:20px;">Cerrar</p>
+            <button class="btn-save" onclick="saveSettings()">Guardar Alarma</button>
+            <p onclick="closeModal()" style="color:#888; cursor:pointer; margin-top:25px;">Volver</p>
         </div>
     </div>
 
-    <audio id="alarm-audio" loop></audio>
+    <audio id="alarm-audio" preload="none"></audio>
 
     <script>
-        // 1. Datos iniciales
+        const RADIO_URL = "https://luveradio.com:7443/listen/radio_luve/radio.aac";
+        const TIEMPO_REPRODUCCION = 10 * 60 * 1000; // 10 minutos en ms
+        
         let alarmTime = localStorage.getItem('alarm') || "";
-        let alarmSound = localStorage.getItem('sound') || "https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3";
+        let alarmTimeout;
         const audio = document.getElementById('alarm-audio');
+        audio.src = RADIO_URL;
         
         function updateClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
+            const s = now.getSeconds();
+
             document.getElementById('time').innerText = `${h}:${m}`;
             
             const options = { weekday: 'long', day: 'numeric', month: 'long' };
             document.getElementById('date').innerText = now.toLocaleDateString('es-AR', options);
 
-            // Modo Noche Automático (22hs a 07hs)
+            // Modo Noche (22hs a 07hs)
             if (now.getHours() >= 22 || now.getHours() < 7) {
                 document.body.classList.add('night-mode');
             } else {
                 document.body.classList.remove('night-mode');
             }
 
-            // Chequeo de Alarma
-            if (alarmTime === `${h}:${m}` && now.getSeconds() === 0) {
+            // Chequeo de Alarma (exactamente al segundo 0)
+            if (alarmTime === `${h}:${m}` && s === 0) {
                 startAlarm();
             }
         }
 
-        // 2. Clima María Grande
         async function getWeather() {
             try {
                 const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-31.66&longitude=-59.91&current_weather=true');
                 const d = await r.json();
                 document.getElementById('weather-temp').innerText = Math.round(d.current_weather.temperature) + "°C";
-            } catch(e) { console.log("Error clima"); }
+            } catch(e) { document.getElementById('weather-temp').innerText = "N/A"; }
         }
 
-        // 3. Fondo (Picsum es más estable que Unsplash Source)
         function changeBg() {
             const bg = document.getElementById('bg');
-            const randomID = Math.floor(Math.random() * 1000);
-            bg.style.backgroundImage = `url('https://picsum.photos/1920/1080?random=${randomID}')`;
+            const randomID = Math.floor(Math.random() * 500);
+            bg.style.backgroundImage = `url('https://picsum.photos/1280/720?random=${randomID}')`;
         }
 
-        // 4. Batería (con chequeo para evitar errores)
-        if (navigator.getBattery) {
-            navigator.getBattery().then(bat => {
-                const update = () => document.getElementById('battery-status').innerText = `🔋 Batería: ${Math.round(bat.level * 100)}%`;
-                update();
-                bat.onlevelchange = update;
-            });
+        function startAlarm() {
+            audio.load(); // Recarga el stream para que sea en vivo
+            audio.play().catch(e => console.log("Error de reproducción. Toca la pantalla una vez al cargar la página."));
+            
+            document.body.classList.add('alarm-flashing');
+            
+            // Auto-apagado tras 10 minutos
+            alarmTimeout = setTimeout(stopAlarm, TIEMPO_REPRODUCCION);
+
+            // Detener al tocar cualquier parte
+            document.body.onclick = stopAlarm;
         }
 
-        // 5. Modal y Alarmas
+        function stopAlarm() {
+            audio.pause();
+            clearTimeout(alarmTimeout);
+            document.body.classList.remove('alarm-flashing');
+            document.body.onclick = null;
+        }
+
         function openModal() { document.getElementById('modal').style.display = 'flex'; }
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
         function saveSettings() {
-            alarmTime = document.getElementById('alarmTime').value;
-            alarmSound = document.getElementById('alarmSound').value;
-            localStorage.setItem('alarm', alarmTime);
-            localStorage.setItem('sound', alarmSound);
-            showAlarmInfo();
+            const val = document.getElementById('alarmTime').value;
+            if(val) {
+                alarmTime = val;
+                localStorage.setItem('alarm', alarmTime);
+                showAlarmInfo();
+            }
             closeModal();
         }
 
@@ -207,22 +222,20 @@
             }
         }
 
-        function startAlarm() {
-            audio.src = alarmSound;
-            audio.play();
-            document.body.classList.add('alarm-flashing');
-            document.body.onclick = () => {
-                audio.pause();
-                document.body.classList.remove('alarm-flashing');
-                document.body.onclick = null;
-            };
+        // Batería
+        if (navigator.getBattery) {
+            navigator.getBattery().then(bat => {
+                const u = () => document.getElementById('battery-status').innerText = `🔋 Batería: ${Math.round(bat.level * 100)}%`;
+                u(); bat.onlevelchange = u;
+            });
         }
 
-        // Inicios
+        // Intervalos
         setInterval(updateClock, 1000);
-        setInterval(getWeather, 1800000); // 30 min
-        setInterval(changeBg, 3600000); // 1 hora
+        setInterval(getWeather, 1800000);
+        setInterval(changeBg, 3600000);
         
+        // Inicio inmediato
         updateClock();
         getWeather();
         changeBg();
