@@ -1,14 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Feli Nest Hub v2</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass: rgba(0, 0, 0, 0.4);
+            --glass: rgba(0, 0, 0, 0.5);
             --glass-border: rgba(255, 255, 255, 0.1);
             --text: #ffffff;
             --primary: #8ab4f8;
@@ -17,162 +16,131 @@
         body.night-mode {
             --primary: #ff4444;
             --text: #ff4444;
-            --glass: rgba(50, 0, 0, 0.6);
+            --glass: rgba(40, 0, 0, 0.7);
         }
 
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
             font-family: 'Inter', sans-serif;
             color: var(--text);
             background-color: #000;
             overflow: hidden;
-            transition: color 1s, background-color 1s;
         }
 
         #bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-size: cover;
-            background-position: center;
-            transition: opacity 1.5s ease-in-out;
-            z-index: -1;
-            opacity: 1;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            z-index: -1; transition: opacity 2s;
         }
 
-        body.night-mode #bg {
-            opacity: 0.1;
-            filter: grayscale(1);
-        }
+        body.night-mode #bg { opacity: 0.15; filter: grayscale(1); }
 
         .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to right, rgba(0, 0, 0, 0.7), transparent);
-            z-index: 0;
-            pointer-events: none;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); z-index: 0;
         }
 
+        /* --- LAYOUT HORIZONTAL REPARADO --- */
         .main-container {
             position: relative;
             z-index: 1;
             display: flex;
+            flex-direction: row; /* Siempre horizontal */
             height: 100vh;
+            width: 100vw;
             align-items: center;
-            justify-content: space-between;
-            padding: 0 8%;
+            justify-content: space-around;
+            padding: 0 5%;
             box-sizing: border-box;
         }
 
+        .clock-section {
+            flex: 1.5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
         #time {
-            font-size: 11rem;
+            font-size: 9rem; /* Tamaño ajustado para no romper el layout */
             font-weight: 800;
-            line-height: 0.9;
-            letter-spacing: -5px;
+            line-height: 0.8;
+            letter-spacing: -4px;
+            margin: 0;
         }
 
         #date {
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 300;
             opacity: 0.8;
-            margin-top: 10px;
-        }
-
-        .info-section {
-            background: var(--glass);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid var(--glass-border);
-            padding: 40px;
-            border-radius: 40px;
-            min-width: 320px;
-        }
-
-        /* --- FIX PARA CELULAR (AMONTONADO) --- */
-        @media (max-width: 800px) {
-            .main-container {
-                flex-direction: column;
-                /* Cambia a vertical */
-                justify-content: center;
-                text-align: center;
-                padding: 20px;
-            }
-
-            #time {
-                font-size: 7rem;
-                letter-spacing: -2px;
-            }
-
-            /* Achicamos la hora */
-            #date {
-                font-size: 1.5rem;
-                margin-bottom: 30px;
-            }
-
-            .info-section {
-                padding: 20px;
-                min-width: 90%;
-                border-radius: 25px;
-            }
-
-            .temp {
-                font-size: 3rem;
-            }
-        }
-
-        .temp {
-            font-size: 4.5rem;
-            font-weight: 500;
-        }
-
-        .city {
-            font-size: 1.1rem;
-            opacity: 0.7;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-
-        .pill {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.08);
-            padding: 8px 18px;
-            border-radius: 20px;
             margin-top: 15px;
-            font-size: 1rem;
+            text-transform: capitalize;
         }
 
-        .settings-btn {
-            position: absolute;
-            bottom: 30px;
-            right: 30px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            width: 65px;
-            height: 65px;
-            cursor: pointer;
-            font-size: 30px;
-            color: white;
+        #alarm-info {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin-top: 15px;
+            display: none;
+            background: rgba(0,0,0,0.3);
+            padding: 5px 15px;
+            border-radius: 10px;
+        }
+
+        /* LADO DERECHO (TARJETA INFO) */
+        .info-section {
+            flex: 1;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 35px;
+            max-width: 350px;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            z-index: 999;
         }
 
-        /* ... el resto del modal sigue igual ... */
+        .city { font-size: 1rem; opacity: 0.7; letter-spacing: 2px; text-transform: uppercase; }
+        .temp { font-size: 4.5rem; font-weight: 500; margin: 5px 0; }
+        .pill { background: rgba(255, 255, 255, 0.1); padding: 8px 15px; border-radius: 20px; font-size: 1rem; }
+
+        /* BOTONES Y MODAL */
+        .settings-btn {
+            position: absolute; bottom: 20px; right: 20px;
+            background: rgba(255, 255, 255, 0.2); border: none;
+            border-radius: 50%; width: 55px; height: 55px;
+            cursor: pointer; font-size: 25px; color: white;
+            display: flex; align-items: center; justify-content: center; z-index: 100;
+        }
+
+        #modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center;
+        }
+
+        .modal-content {
+            background: #111; padding: 30px; border-radius: 30px; border: 1px solid #333;
+            width: 80%; max-width: 350px; text-align: center;
+        }
+
+        input[type="time"] {
+            width: 100%; padding: 15px; margin: 15px 0; background: #222;
+            border: 1px solid #444; color: white; border-radius: 12px; font-size: 1.5rem; text-align: center;
+        }
+
+        .btn-save {
+            background: #8ab4f8; color: #000; font-weight: bold; border: none;
+            padding: 15px; border-radius: 12px; width: 100%; cursor: pointer; font-size: 1.1rem;
+        }
+
+        .alarm-flashing { animation: flash 0.8s infinite alternate; }
+        @keyframes flash { from { background-color: #000; } to { background-color: #500; } }
     </style>
 </head>
-
 <body id="body-main">
 
     <div id="bg"></div>
@@ -181,10 +149,8 @@
     <div class="main-container">
         <div class="clock-section">
             <div id="time">00:00</div>
-            <div id="date">Iniciando...</div>
-            <div id="alarm-info" style="color: #8ab4f8; font-size: 1.5rem; margin-top:20px; display:none;">
-                📻 Radio a las <span id="val-alarm"></span>
-            </div>
+            <div id="date">Cargando...</div>
+            <div id="alarm-info">📻 Radio a las <span id="val-alarm"></span></div>
         </div>
 
         <div class="info-section">
@@ -198,11 +164,10 @@
 
     <div id="modal">
         <div class="modal-content">
-            <h2 style="margin-top:0">Configuración</h2>
-            <p style="color:#aaa">Se activará Luve Radio</p>
+            <h2 style="margin:0 0 10px 0; color:#8ab4f8;">Alarma Radio</h2>
             <input type="time" id="alarmTime">
             <button class="btn-save" onclick="saveSettings()">Guardar Alarma</button>
-            <p onclick="closeModal()" style="color:#888; cursor:pointer; margin-top:25px;">Volver</p>
+            <p onclick="closeModal()" style="color:#666; cursor:pointer; margin-top:20px;">Cerrar</p>
         </div>
     </div>
 
@@ -210,7 +175,7 @@
 
     <script>
         const RADIO_URL = "https://luveradio.com:7443/listen/radio_luve/radio.aac";
-        const TIEMPO_REPRODUCCION = 10 * 60 * 1000; // 10 minutos en ms
+        const TIEMPO_REPRODUCCION = 10 * 60 * 1000; 
 
         let alarmTime = localStorage.getItem('alarm') || "";
         let alarmTimeout;
@@ -221,8 +186,6 @@
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
-            const s = now.getSeconds();
-
             document.getElementById('time').innerText = `${h}:${m}`;
 
             const options = { weekday: 'long', day: 'numeric', month: 'long' };
@@ -235,8 +198,8 @@
                 document.body.classList.remove('night-mode');
             }
 
-            // Chequeo de Alarma (exactamente al segundo 0)
-            if (alarmTime === `${h}:${m}` && s === 0) {
+            // Alarma
+            if (alarmTime === `${h}:${m}` && now.getSeconds() === 0) {
                 startAlarm();
             }
         }
@@ -246,31 +209,23 @@
                 const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-31.66&longitude=-59.91&current_weather=true');
                 const d = await r.json();
                 document.getElementById('weather-temp').innerText = Math.round(d.current_weather.temperature) + "°C";
-            } catch (e) { document.getElementById('weather-temp').innerText = "N/A"; }
+            } catch(e) { console.log("Error clima"); }
         }
 
         function changeBg() {
-            const bg = document.getElementById('bg');
             const randomID = Math.floor(Math.random() * 500);
-            bg.style.backgroundImage = `url('https://picsum.photos/1280/720?random=${randomID}')`;
+            document.getElementById('bg').style.backgroundImage = `url('https://picsum.photos/1280/720?random=${randomID}')`;
         }
 
         function startAlarm() {
-            audio.load(); // Recarga el stream para que sea en vivo
-            audio.play().catch(e => console.log("Error de reproducción. Toca la pantalla una vez al cargar la página."));
-
+            audio.load(); audio.play();
             document.body.classList.add('alarm-flashing');
-
-            // Auto-apagado tras 10 minutos
             alarmTimeout = setTimeout(stopAlarm, TIEMPO_REPRODUCCION);
-
-            // Detener al tocar cualquier parte
             document.body.onclick = stopAlarm;
         }
 
         function stopAlarm() {
-            audio.pause();
-            clearTimeout(alarmTimeout);
+            audio.pause(); clearTimeout(alarmTimeout);
             document.body.classList.remove('alarm-flashing');
             document.body.onclick = null;
         }
@@ -280,7 +235,7 @@
 
         function saveSettings() {
             const val = document.getElementById('alarmTime').value;
-            if (val) {
+            if(val) {
                 alarmTime = val;
                 localStorage.setItem('alarm', alarmTime);
                 showAlarmInfo();
@@ -289,13 +244,12 @@
         }
 
         function showAlarmInfo() {
-            if (alarmTime) {
+            if(alarmTime) {
                 document.getElementById('alarm-info').style.display = 'block';
                 document.getElementById('val-alarm').innerText = alarmTime;
             }
         }
 
-        // Batería
         if (navigator.getBattery) {
             navigator.getBattery().then(bat => {
                 const u = () => document.getElementById('battery-status').innerText = `🔋 Batería: ${Math.round(bat.level * 100)}%`;
@@ -303,17 +257,10 @@
             });
         }
 
-        // Intervalos
         setInterval(updateClock, 1000);
         setInterval(getWeather, 1800000);
         setInterval(changeBg, 3600000);
-
-        // Inicio inmediato
-        updateClock();
-        getWeather();
-        changeBg();
-        showAlarmInfo();
+        updateClock(); getWeather(); changeBg(); showAlarmInfo();
     </script>
 </body>
-
 </html>
