@@ -3,20 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Feli Nest Hub PRO</title>
+    <title>Feli Nest Hub Final</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass: rgba(0, 0, 0, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-bg: rgba(255, 255, 255, 0.05); /* Más transparente */
+            --glass-border: rgba(255, 255, 255, 0.2);
             --text: #ffffff;
             --primary: #8ab4f8;
-        }
-
-        body.night-mode {
-            --primary: #ff4444;
-            --text: #ff4444;
-            --glass: rgba(30, 0, 0, 0.7);
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
         }
 
         body, html {
@@ -24,113 +19,135 @@
             width: 100%; height: 100%;
             font-family: 'Inter', sans-serif;
             color: var(--text);
-            background-color: #111; /* Fondo oscuro mientras carga */
+            /* Fondo de respaldo por si falla la imagen (Degradado Google Style) */
+            background: linear-gradient(45deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             overflow: hidden;
         }
 
-        #bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            z-index: -2;
-            transition: opacity 2s ease-in-out;
-            background-image: url('https://picsum.photos/1280/720?nature'); /* Fondo inicial */
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        body.night-mode #bg { filter: brightness(0.2) grayscale(1); }
+        /* La imagen va encima del degradado */
+        #bg-image {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            z-index: -2; opacity: 0.6; /* Dejamos ver un poco el color de fondo */
+            transition: opacity 2s;
+            /* Imagen de paisaje de alta calidad directa */
+            background-image: url('https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2070&auto=format&fit=crop');
+        }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle at center, transparent 10%, rgba(0,0,0,0.5) 100%);
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.6) 100%);
             z-index: -1;
         }
 
+        /* LAYOUT HORIZONTAL FIJO */
         .main-container {
             position: relative; z-index: 1;
             display: flex; flex-direction: row;
             height: 100vh; width: 100vw;
             align-items: center; justify-content: space-around;
-            padding: 0 5%; box-sizing: border-box;
+            padding: 0 40px; box-sizing: border-box;
         }
 
-        .clock-section { flex: 1.5; display: flex; flex-direction: column; justify-content: center; }
+        /* SECCIÓN RELOJ (IZQUIERDA) */
+        .clock-section {
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: flex-start;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
 
         #time {
-            font-size: 10rem; font-weight: 700; line-height: 0.8;
-            letter-spacing: -5px; margin: 0;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-size: 11rem; font-weight: 700; line-height: 0.8;
+            letter-spacing: -6px; margin: 0;
         }
 
         #date {
-            font-size: 2.2rem; font-weight: 200; opacity: 0.9;
-            margin-top: 15px; text-transform: capitalize;
+            font-size: 2rem; font-weight: 300; opacity: 0.9;
+            margin-top: 10px; text-transform: capitalize;
         }
 
         #alarm-info {
-            color: var(--primary); font-size: 1.3rem; margin-top: 20px;
-            display: none; background: rgba(0,0,0,0.5);
-            padding: 8px 15px; border-radius: 12px;
+            display: none; margin-top: 15px; color: var(--primary);
+            font-weight: 500; font-size: 1.2rem;
+            background: rgba(0,0,0,0.4); padding: 5px 15px; border-radius: 20px;
         }
 
+        /* TARJETA INFO (DERECHA) - EFECTO CRISTAL REAL */
         .info-section {
-            flex: 1; background: var(--glass);
+            background: var(--glass-bg);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); padding: 30px;
-            border-radius: 40px; max-width: 360px; text-align: center;
+            border: 1px solid var(--glass-border);
+            padding: 40px; border-radius: 40px;
+            min-width: 300px; text-align: center;
+            box-shadow: var(--shadow);
         }
 
-        .temp { font-size: 5rem; font-weight: 400; margin: 10px 0; }
-        .city { font-size: 0.9rem; opacity: 0.6; letter-spacing: 3px; text-transform: uppercase; font-weight: 700; }
-        .pill { background: rgba(255, 255, 255, 0.1); padding: 10px 20px; border-radius: 25px; font-size: 1rem; }
+        .city { font-size: 1rem; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 5px; opacity: 0.8; }
+        .temp { font-size: 5.5rem; font-weight: 400; margin: 0; line-height: 1; }
+        
+        .pill {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px; border-radius: 30px;
+            font-size: 1rem; display: inline-flex; align-items: center; gap: 8px;
+            margin-top: 20px;
+        }
 
+        /* BOTÓN AJUSTES */
         .settings-btn {
-            position: absolute; bottom: 25px; right: 25px;
-            background: rgba(255, 255, 255, 0.2); border: none;
-            border-radius: 50%; width: 60px; height: 60px;
-            cursor: pointer; font-size: 28px; color: white;
+            position: absolute; bottom: 30px; right: 30px;
+            background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 50%; width: 50px; height: 50px;
+            cursor: pointer; font-size: 24px; color: white;
             display: flex; align-items: center; justify-content: center; z-index: 100;
         }
 
+        /* MODAL */
         #modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.92); z-index: 200; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);
+            z-index: 200; align-items: center; justify-content: center;
         }
-
         .modal-content {
-            background: #111; padding: 35px; border-radius: 35px; border: 1px solid #333;
-            width: 85%; max-width: 380px; text-align: center; color: white;
+            background: #222; padding: 30px; border-radius: 30px; 
+            border: 1px solid #444; text-align: center; width: 300px;
         }
-
         input[type="time"] {
-            width: 100%; padding: 18px; margin: 20px 0; background: #222;
-            border: 1px solid #444; color: white; border-radius: 15px; font-size: 1.8rem; text-align: center;
+            width: 100%; padding: 15px; margin: 20px 0; background: #333;
+            border: none; color: white; border-radius: 10px; font-size: 2rem; text-align: center;
         }
-
         .btn-save {
-            background: #8ab4f8; color: #000; font-weight: 700; border: none;
-            padding: 18px; border-radius: 15px; width: 100%; cursor: pointer; font-size: 1.2rem;
+            background: #8ab4f8; color: #000; padding: 15px; border-radius: 10px;
+            width: 100%; border: none; font-weight: bold; font-size: 1.1rem;
         }
 
         .alarm-flashing { animation: flash 0.6s infinite alternate; }
-        @keyframes flash { from { background-color: transparent; } to { background-color: rgba(255, 0, 0, 0.4); } }
+        @keyframes flash { from { background-color: transparent; } to { background-color: rgba(200, 50, 50, 0.6); } }
     </style>
 </head>
 <body id="body-main">
 
-    <div id="bg"></div>
+    <div id="bg-image"></div>
     <div class="overlay"></div>
 
     <div class="main-container">
         <div class="clock-section">
             <div id="time">--:--</div>
             <div id="date">Cargando...</div>
-            <div id="alarm-info">📻 Radio a las <span id="val-alarm"></span></div>
+            <div id="alarm-info">📻 <span id="val-alarm"></span></div>
         </div>
 
         <div class="info-section">
             <div class="city">María Grande</div>
             <div id="weather-temp" class="temp">--°C</div>
-            <div class="pill" id="battery-status">🔋 Batería: --%</div>
+            <div class="pill" id="battery-status">🔋 --%</div>
         </div>
     </div>
 
@@ -138,10 +155,10 @@
 
     <div id="modal">
         <div class="modal-content">
-            <h2 style="margin:0 0 10px 0; color:#8ab4f8;">Configurar Alarma</h2>
+            <h3 style="margin:0; color:#8ab4f8;">Alarma Radio</h3>
             <input type="time" id="alarmTime">
-            <button class="btn-save" onclick="saveSettings()">Guardar Alarma</button>
-            <p onclick="closeModal()" style="color:#666; cursor:pointer; margin-top:25px; text-decoration: underline;">Cerrar</p>
+            <button class="btn-save" onclick="saveSettings()">Guardar</button>
+            <p onclick="closeModal()" style="color:#777; margin-top:20px; cursor:pointer;">Cancelar</p>
         </div>
     </div>
 
@@ -165,12 +182,6 @@
             const options = { weekday: 'long', day: 'numeric', month: 'long' };
             document.getElementById('date').innerText = now.toLocaleDateString('es-AR', options);
 
-            if (now.getHours() >= 22 || now.getHours() < 7) {
-                document.body.classList.add('night-mode');
-            } else {
-                document.body.classList.remove('night-mode');
-            }
-
             if (alarmTime === h + ":" + m && now.getSeconds() === 0) {
                 startAlarm();
             }
@@ -178,23 +189,11 @@
 
         async function getWeather() {
             try {
+                // Coordenadas María Grande
                 const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-31.66&longitude=-59.91&current_weather=true');
                 const d = await r.json();
                 document.getElementById('weather-temp').innerText = Math.round(d.current_weather.temperature) + "°C";
             } catch(e) { console.log("Error clima"); }
-        }
-
-        function changeBg() {
-            const bg = document.getElementById('bg');
-            // Usamos una URL de búsqueda de Picsum que es mucho más estable
-            const randomID = Math.floor(Math.random() * 1000);
-            const newImg = new Image();
-            const url = "https://picsum.photos/1280/720?nature,landscape&sig=" + randomID;
-            
-            newImg.src = url;
-            newImg.onload = () => {
-                bg.style.backgroundImage = "url('" + url + "')";
-            };
         }
 
         function startAlarm() {
@@ -225,26 +224,24 @@
 
         function showAlarmInfo() {
             if(alarmTime) {
-                document.getElementById('alarm-info').style.display = 'block';
+                document.getElementById('alarm-info').style.display = 'inline-block';
                 document.getElementById('val-alarm').innerText = alarmTime;
             }
         }
 
-        // Batería con protección para que no rompa el script si falla
         try {
             if (navigator.getBattery) {
                 navigator.getBattery().then(bat => {
-                    const u = () => document.getElementById('battery-status').innerText = "🔋 Batería: " + Math.round(bat.level * 100) + "%";
+                    const u = () => document.getElementById('battery-status').innerText = "🔋 " + Math.round(bat.level * 100) + "%";
                     u(); bat.onlevelchange = u;
                 });
             }
-        } catch (e) { console.log("Bateria no soportada"); }
+        } catch(e) {}
 
         setInterval(updateClock, 1000);
-        setInterval(getWeather, 1800000); 
-        setInterval(changeBg, 900000); // Cambia fondo cada 15 min
+        setInterval(getWeather, 1800000);
         
-        updateClock(); getWeather(); changeBg(); showAlarmInfo();
+        updateClock(); getWeather(); showAlarmInfo();
     </script>
 </body>
 </html>
