@@ -7,10 +7,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --glass: rgba(0, 0, 0, 0.3);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass: rgba(0, 0, 0, 0.4);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --text: #ffffff;
             --primary: #8ab4f8;
+        }
+
+        /* Modo Noche: Colores rojos suaves para no molestar */
+        body.night-mode {
+            --primary: #ff4444;
+            --text: #ff4444;
+            --glass: rgba(50, 0, 0, 0.6);
         }
 
         body, html {
@@ -20,132 +27,73 @@
             color: var(--text);
             background-color: #000;
             overflow: hidden;
+            transition: color 1s, background-color 1s;
         }
 
-        /* Contenedor de fondo con transición suave */
         #bg {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            transition: background-image 2s ease-in-out;
-            z-index: -1;
+            background-size: cover; background-position: center;
+            transition: opacity 1.5s ease-in-out;
+            z-index: -1; opacity: 1;
         }
+
+        body.night-mode #bg { opacity: 0.1; filter: grayscale(1); }
 
         .overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(to right, rgba(0,0,0,0.6), transparent);
+            background: linear-gradient(to right, rgba(0,0,0,0.7), transparent);
             z-index: 0;
         }
 
-        /* Layout Horizontal */
         .main-container {
-            position: relative;
-            z-index: 1;
-            display: flex;
-            flex-direction: row;
-            height: 100vh;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 8%;
-            box-sizing: border-box;
+            position: relative; z-index: 1;
+            display: flex; height: 100vh;
+            align-items: center; justify-content: space-between;
+            padding: 0 8%; box-sizing: border-box;
         }
 
-        /* Lado Izquierdo: Reloj */
-        .clock-section {
-            display: flex;
-            flex-direction: column;
-        }
+        #time { font-size: 11rem; font-weight: 800; line-height: 0.9; letter-spacing: -5px; }
+        #date { font-size: 2.2rem; font-weight: 300; opacity: 0.8; margin-top: 10px; }
 
-        #time {
-            font-size: 11rem;
-            font-weight: 800;
-            line-height: 0.9;
-            margin: 0;
-            letter-spacing: -5px;
-        }
-
-        #date {
-            font-size: 2.5rem;
-            font-weight: 300;
-            margin-top: 10px;
-            opacity: 0.8;
-        }
-
-        /* Lado Derecho: Info */
         .info-section {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border);
-            padding: 40px;
-            border-radius: 40px;
-            min-width: 300px;
-            text-align: left;
+            background: var(--glass); backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border);
+            padding: 40px; border-radius: 40px; min-width: 320px;
         }
 
-        .weather-box { margin-bottom: 20px; }
-        .temp { font-size: 4rem; font-weight: 500; }
-        .city { font-size: 1.2rem; opacity: 0.7; letter-spacing: 2px; text-transform: uppercase; }
+        .temp { font-size: 4.5rem; font-weight: 500; }
+        .city { font-size: 1.1rem; opacity: 0.7; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px; }
+        .pill { display: inline-block; background: rgba(255,255,255,0.08); padding: 8px 18px; border-radius: 20px; margin-top: 15px; font-size: 1rem; }
 
-        .pill {
-            display: inline-block;
-            background: rgba(255,255,255,0.1);
-            padding: 8px 15px;
-            border-radius: 20px;
-            margin-top: 10px;
-            font-size: 1rem;
-        }
-
-        /* Alarma Activa */
-        #active-alarm-display {
-            margin-top: 20px;
-            color: var(--primary);
-            font-weight: 500;
-            display: none;
-        }
-
-        /* Botón Ajustes */
         .settings-btn {
             position: absolute; bottom: 30px; right: 30px;
-            background: rgba(255,255,255,0.1);
-            border: none; border-radius: 50%; width: 50px; height: 50px;
-            cursor: pointer; font-size: 20px; color: white;
-            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.1); border: none; border-radius: 50%;
+            width: 60px; height: 60px; cursor: pointer; font-size: 25px;
+            display: flex; align-items: center; justify-content: center; z-index: 101;
         }
 
-        /* Modal de Configuración */
         #modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 100;
-            align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center;
         }
 
         .modal-content {
-            background: #1a1a1a; padding: 40px; border-radius: 30px;
-            width: 90%; max-width: 400px; text-align: center;
-            border: 1px solid #333;
+            background: #111; padding: 35px; border-radius: 30px; border: 1px solid #333;
+            width: 90%; max-width: 400px; text-align: center; color: white;
         }
 
         input[type="time"], select {
-            width: 100%; padding: 15px; margin: 15px 0;
-            background: #333; border: none; color: white;
-            border-radius: 10px; font-size: 1.2rem;
+            width: 100%; padding: 15px; margin: 15px 0; background: #222;
+            border: 1px solid #444; color: white; border-radius: 12px; font-size: 1.2rem;
         }
 
         .btn-save {
-            background: var(--primary); color: #000; font-weight: bold;
-            border: none; padding: 15px 30px; border-radius: 30px; width: 100%;
-            cursor: pointer; font-size: 1.1rem;
+            background: #8ab4f8; color: #000; font-weight: bold; border: none;
+            padding: 18px; border-radius: 15px; width: 100%; cursor: pointer; font-size: 1.1rem;
         }
 
-        /* Animación de Alarma Sonando */
-        .alarm-flashing {
-            animation: flash 0.5s infinite alternate;
-        }
-        @keyframes flash {
-            from { background-color: #000; }
-            to { background-color: #b91c1c; }
-        }
+        .alarm-flashing { animation: flash 0.6s infinite alternate; }
+        @keyframes flash { from { background-color: #000; } to { background-color: #600; } }
     </style>
 </head>
 <body id="body-main">
@@ -155,16 +103,14 @@
 
     <div class="main-container">
         <div class="clock-section">
-            <div id="time">00:00</div>
+            <div id="time">--:--</div>
             <div id="date">Cargando...</div>
-            <div id="active-alarm-display">⏰ Alarma: <span id="alarm-time-status">--:--</span></div>
+            <div id="alarm-info" style="color: #8ab4f8; margin-top:15px; display:none;">⏰ <span id="val-alarm"></span></div>
         </div>
 
         <div class="info-section">
-            <div class="weather-box">
-                <div class="city">María Grande</div>
-                <div class="temp" id="weather-temp">--°C</div>
-            </div>
+            <div class="city">María Grande</div>
+            <div id="weather-temp" class="temp">--°C</div>
             <div class="pill" id="battery-status">🔋 Batería: --%</div>
         </div>
     </div>
@@ -173,50 +119,114 @@
 
     <div id="modal">
         <div class="modal-content">
-            <h2>Configurar Alarma</h2>
+            <h2 style="margin-top:0">Configuración</h2>
+            <label>Hora de Alarma:</label>
             <input type="time" id="alarmTime">
+            <label>Sonido:</label>
             <select id="alarmSound">
-                <option value="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3">Digital (Cerca)</option>
+                <option value="https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3">Digital</option>
                 <option value="https://assets.mixkit.co/active_storage/sfx/1017/1017-preview.mp3">Campanas</option>
-                <option value="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3">Energético</option>
             </select>
-            <button class="btn-save" onclick="saveSettings()">Guardar Cambios</button>
-            <p onclick="closeModal()" style="cursor:pointer; color:#888; margin-top:20px;">Cancelar</p>
+            <button class="btn-save" onclick="saveSettings()">Guardar</button>
+            <p onclick="closeModal()" style="color:#888; cursor:pointer; margin-top:20px;">Cerrar</p>
         </div>
     </div>
 
     <audio id="alarm-audio" loop></audio>
 
     <script>
-        let config = {
-            alarm: localStorage.getItem('alarmTime') || "",
-            sound: localStorage.getItem('alarmSound') || "https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3"
-        };
-
+        // 1. Datos iniciales
+        let alarmTime = localStorage.getItem('alarm') || "";
+        let alarmSound = localStorage.getItem('sound') || "https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3";
         const audio = document.getElementById('alarm-audio');
-        audio.src = config.sound;
-
-        // 1. Reloj y Fecha
+        
         function updateClock() {
             const now = new Date();
             const h = String(now.getHours()).padStart(2, '0');
             const m = String(now.getMinutes()).padStart(2, '0');
             document.getElementById('time').innerText = `${h}:${m}`;
-
+            
             const options = { weekday: 'long', day: 'numeric', month: 'long' };
-            document.getElementById('date').innerText = now.toLocaleDateString('es-ES', options);
+            document.getElementById('date').innerText = now.toLocaleDateString('es-AR', options);
 
-            // Verificar Alarma
-            if (config.alarm === `${h}:${m}` && now.getSeconds() === 0) {
-                triggerAlarm();
+            // Modo Noche Automático (22hs a 07hs)
+            if (now.getHours() >= 22 || now.getHours() < 7) {
+                document.body.classList.add('night-mode');
+            } else {
+                document.body.classList.remove('night-mode');
+            }
+
+            // Chequeo de Alarma
+            if (alarmTime === `${h}:${m}` && now.getSeconds() === 0) {
+                startAlarm();
             }
         }
 
-        // 2. Clima María Grande (Open-Meteo)
-        async function fetchWeather() {
+        // 2. Clima María Grande
+        async function getWeather() {
             try {
-                // Coordenadas aproximadas de María Grande, Entre Ríos
-                const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-31.66&longitude=-59.91&current_weather=true');
-                const data = await res.json();
-                document.getElementById('weather-temp').innerText = Math.round(data.current_weather.temperature) + "°C";
-            } catch (e) { console.error("Error
+                const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=-31.66&longitude=-59.91&current_weather=true');
+                const d = await r.json();
+                document.getElementById('weather-temp').innerText = Math.round(d.current_weather.temperature) + "°C";
+            } catch(e) { console.log("Error clima"); }
+        }
+
+        // 3. Fondo (Picsum es más estable que Unsplash Source)
+        function changeBg() {
+            const bg = document.getElementById('bg');
+            const randomID = Math.floor(Math.random() * 1000);
+            bg.style.backgroundImage = `url('https://picsum.photos/1920/1080?random=${randomID}')`;
+        }
+
+        // 4. Batería (con chequeo para evitar errores)
+        if (navigator.getBattery) {
+            navigator.getBattery().then(bat => {
+                const update = () => document.getElementById('battery-status').innerText = `🔋 Batería: ${Math.round(bat.level * 100)}%`;
+                update();
+                bat.onlevelchange = update;
+            });
+        }
+
+        // 5. Modal y Alarmas
+        function openModal() { document.getElementById('modal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+        function saveSettings() {
+            alarmTime = document.getElementById('alarmTime').value;
+            alarmSound = document.getElementById('alarmSound').value;
+            localStorage.setItem('alarm', alarmTime);
+            localStorage.setItem('sound', alarmSound);
+            showAlarmInfo();
+            closeModal();
+        }
+
+        function showAlarmInfo() {
+            if(alarmTime) {
+                document.getElementById('alarm-info').style.display = 'block';
+                document.getElementById('val-alarm').innerText = alarmTime;
+            }
+        }
+
+        function startAlarm() {
+            audio.src = alarmSound;
+            audio.play();
+            document.body.classList.add('alarm-flashing');
+            document.body.onclick = () => {
+                audio.pause();
+                document.body.classList.remove('alarm-flashing');
+                document.body.onclick = null;
+            };
+        }
+
+        // Inicios
+        setInterval(updateClock, 1000);
+        setInterval(getWeather, 1800000); // 30 min
+        setInterval(changeBg, 3600000); // 1 hora
+        
+        updateClock();
+        getWeather();
+        changeBg();
+        showAlarmInfo();
+    </script>
+</body>
+</html>
