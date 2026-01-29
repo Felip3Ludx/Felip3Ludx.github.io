@@ -101,7 +101,7 @@
 </head>
 
 <body>
-    <div class="container">
+    <div class="container ">
         <div id="time">12:00</div>
 
         <div class="info-side">
@@ -114,6 +114,19 @@
     </div>
 
     <script>
+        let alarma = "07:30"; // Podés crear una interfaz para cambiar esto
+        let sonido = new Audio('https://www.tu-url.com/alarma.mp3');
+
+        function chequearAlarma() {
+            let h = String(new Date().getHours()).padStart(2, '0');
+            let m = String(new Date().getMinutes()).padStart(2, '0');
+            if (`${h}:${m}` === alarma) {
+                sonido.play();
+                alert("¡BUEN DÍA!");
+            }
+        }
+        setInterval(chequearAlarma, 1000);
+
         function updateClock() {
             const now = new Date();
 
